@@ -2342,15 +2342,16 @@ impl CodewhaleClient {
         let mut builder = crate::tls::reqwest_client_builder()
             .default_headers(headers)
             .user_agent(client_user_agent(api_provider))
-            .connect_timeout(config.connect_timeout())
-            .tcp_keepalive(config.tcp_keepalive())
-            .http2_keep_alive_interval(config.http2_keep_alive_interval())
-            .http2_keep_alive_timeout(config.http2_keep_alive_timeout())
-            .min_tls_version(reqwest::tls::Version::TLS_1_2);
-        if api_provider == ProviderKind::OpenaiCodex {
-            builder = builder.redirect(reqwest::redirect::Policy::none());
-        }
-        if force_http1 {
+            .connect_timeout(Duration::from_secs(30))
+            .tcp_keepalive(Some(Duration::from_secs(30)))
+            .http2_keep_alive_interval(Some(Duration::from_secs(15)))
+            .http2_keep_alive_timeout(Duration::from_secs(20))
+            .min_tls_version(reqwest::tls::Version::TLS_1_3);
+        let pin_http1 = force_http1 || force_http1_from_env();
+        if pin_http1 {
+            if force_http1_from_env() && !force_http1 {
+                logging::info("CODEWHALE_FORCE_HTTP1=1 — pinning HTTP client to HTTP/1.1");
+            }
             builder = builder.http1_only();
         }
         if let Ok(cert_path) = std::env::var("SSL_CERT_FILE")
