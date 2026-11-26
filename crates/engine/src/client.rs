@@ -2657,7 +2657,7 @@ impl CodewhaleClient {
             .tcp_keepalive(config.tcp_keepalive())
             .http2_keep_alive_interval(config.http2_keep_alive_interval())
             .http2_keep_alive_timeout(config.http2_keep_alive_timeout())
-            .min_tls_version(reqwest::tls::Version::TLS_1_2)
+            .min_tls_version(reqwest::tls::Version::TLS_1_3)
             .retry(reqwest::retry::never());
         if api_provider == ProviderKind::OpenaiCodex {
             builder = builder.redirect(reqwest::redirect::Policy::none());
